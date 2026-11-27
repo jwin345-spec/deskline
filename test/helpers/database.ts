@@ -26,7 +26,9 @@ export async function createTestDatabase(): Promise<TestDatabase> {
   const admin = await createDatabase({ url, poolMax: 1 });
   await sql`create schema ${sql.id(schema)}`.execute(admin);
   const db = await createDatabase({ url, poolMax: 10, searchPath: schema });
-  await migrateToLatest(db);
+  // Name the schema explicitly: without it Kysely treats a migration table in
+  // any schema (e.g. a test file running in parallel) as this one's.
+  await migrateToLatest(db, { schema });
   return {
     db,
     backend: 'postgres',
